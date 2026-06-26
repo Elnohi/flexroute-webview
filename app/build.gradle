@@ -4,13 +4,13 @@ plugins {
 
 android {
     namespace 'com.flexrouteapp.twa'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.flexrouteapp.twa"   // Must match your existing Play Store package name
         minSdk 21                               // Android 5.0+ — covers 99%+ of active devices
-        targetSdk 34
-        versionCode 2                           // Must be higher than your current TWA versionCode
+        targetSdk 35
+        versionCode 3                           // Must be higher than your current TWA versionCode
         versionName "1.0.1"
 
         // Required for WebView file chooser on older Android
