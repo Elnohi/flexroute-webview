@@ -31,6 +31,9 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/signing.keystore
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      
       - name: Build and sign release AAB
         run: |
           ./gradlew bundleRelease \
