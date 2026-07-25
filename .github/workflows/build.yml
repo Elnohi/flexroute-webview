@@ -33,7 +33,7 @@ jobs:
 
       - name: Build and sign release AAB
         run: |
-          gradle bundleRelease \
+          ./gradlew bundleRelease \
             -Pandroid.injected.signing.store.file=$(pwd)/app/signing.keystore \
             -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
             -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
