@@ -18,6 +18,8 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import java.net.URISyntaxException;
+
 public class MainActivity extends Activity {
 
     private static final String APP_URL = "https://flexrouteapp.com/flexroute";
@@ -83,12 +85,37 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
+
+                // intent:// URLs — used by shift-mode Waze / Maps buttons.
+                // Must be parsed with URI_INTENT_SCHEME to extract the target
+                // package and browser_fallback_url. Plain Uri.parse creates a
+                // broken intent whose data scheme is literally "intent:", which
+                // resolveActivity always rejects → nothing launches.
+                if (url.startsWith("intent:")) {
+                    try {
+                        Intent launchIntent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                        if (launchIntent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(launchIntent);
+                            return true;
+                        }
+                        // Target app (Waze / Maps) not installed — load the
+                        // fallback URL that the intent:// embedded.
+                        String fallback = launchIntent.getStringExtra("browser_fallback_url");
+                        if (fallback != null) {
+                            view.loadUrl(fallback);
+                        }
+                    } catch (URISyntaxException e) {
+                        // Malformed intent:// — ignore, do not crash.
+                    }
+                    return true;   // never let WebView try to load intent:// itself
+                }
+
                 // Keep flexrouteapp.com and netlify function calls inside WebView
                 if (url.startsWith("https://flexrouteapp.com") ||
                     url.contains(".netlify/functions/")) {
                     return false;
                 }
-                // Open external URLs (maps, waze, share links) in browser
+                // Open external URLs (share links, etc.) in browser
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
