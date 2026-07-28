@@ -5,6 +5,35 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!--
+        Package visibility (Android 11 / API 30+).
+        Without this block, PackageManager.resolveActivity() and
+        intent.resolveActivity() both return null for these apps even
+        when they are installed, and startActivity() throws
+        ActivityNotFoundException. This is what breaks the Waze /
+        Google Maps handoff from the WebView in shift mode.
+
+        Docs: https://developer.android.com/training/package-visibility
+    -->
+    <queries>
+        <!-- Direct hand-off targets from FlexRoute's shift mode -->
+        <package android:name="com.waze" />
+        <package android:name="com.google.android.apps.maps" />
+
+        <!-- Generic http/https VIEW handlers. Belt-and-suspenders: if
+             Waze / Maps aren't installed, the browser_fallback_url in
+             the intent:// URL still resolves to a browser. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+    </queries>
+
     <application
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="true"
