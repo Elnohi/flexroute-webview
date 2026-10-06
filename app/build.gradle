@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.flexrouteapp.twa"   // Must match your existing Play Store package name
-        minSdk 21                               // Android 5.0+ — covers 99%+ of active devices
+        minSdk 24                               // Android 7.0+ — Play automatic protection requires 24 or higher
         targetSdk 36
         versionCode 8                          // Must be higher than your current TWA versionCode
         versionName "1.0.5"
