@@ -10,6 +10,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -28,6 +30,13 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ProgressBar progressBar;
 
+    // Back button (Android 13+ / API 36). When an app targets Android 16 (API 36), the system no longer calls
+    // onBackPressed() or dispatches KEYCODE_BACK on Android 16 phones, so Back must be handled through the
+    // back-invoked callback. It is registered ONLY while the WebView has history to go back to; when there
+    // is none, the system handles Back itself (leaves the app, with the normal back-to-home animation).
+    private OnBackInvokedCallback backCallback;
+    private boolean backCallbackRegistered = false;
+
     // For file chooser (camera/gallery access)
     private ValueCallback<Uri[]> filePathCallback;
     private static final int FILE_CHOOSER_REQUEST = 100;
@@ -42,6 +51,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            backCallback = () -> {
+                if (webView != null && webView.canGoBack()) webView.goBack();
+            };
+        }
 
         // Full-screen layout
         RelativeLayout layout = new RelativeLayout(this);
@@ -108,6 +123,13 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 progressBar.setVisibility(View.GONE);
+                updateBackHandling();
+            }
+
+            @Override
+            public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+                super.doUpdateVisitedHistory(view, url, isReload);
+                updateBackHandling();
             }
         });
 
@@ -231,7 +253,22 @@ public class MainActivity extends Activity {
         }
     }
 
-    // Back button navigates within WebView history before closing app
+    // Register the back callback while the WebView can go back, unregister it when it can't.
+    private void updateBackHandling() {
+        if (backCallback == null || webView == null) return;           // only exists on Android 13+
+        boolean need = webView.canGoBack();
+        OnBackInvokedDispatcher dispatcher = getOnBackInvokedDispatcher();
+        if (need && !backCallbackRegistered) {
+            dispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+            backCallbackRegistered = true;
+        } else if (!need && backCallbackRegistered) {
+            dispatcher.unregisterOnBackInvokedCallback(backCallback);
+            backCallbackRegistered = false;
+        }
+    }
+
+    // Older Android (below 13, or when the app has not enabled the back callback): Back navigates within the
+    // WebView history before closing the app. On Android 16 with targetSdk 36 this is not called.
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
@@ -258,6 +295,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         webView.onResume();
+        updateBackHandling();
     }
 
     @Override
