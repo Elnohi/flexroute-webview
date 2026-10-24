@@ -10,8 +10,8 @@ android {
         applicationId "com.flexrouteapp.twa"   // Must match your existing Play Store package name
         minSdk 24                               // Android 7.0+ — Play automatic protection requires 24 or higher
         targetSdk 36
-        versionCode 8                          // Must be higher than your current TWA versionCode
-        versionName "1.0.5"
+        versionCode 9                          // Must be higher than your current TWA versionCode
+        versionName "1.0.6"
 
         // Required for WebView file chooser on older Android
         multiDexEnabled true
