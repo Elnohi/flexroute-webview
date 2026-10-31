@@ -10,11 +10,8 @@ android {
         applicationId "com.flexrouteapp.twa"   // Must match your existing Play Store package name
         minSdk 24                               // Android 7.0+ — Play automatic protection requires 24 or higher
         targetSdk 36
-        versionCode 9                          // Must be higher than your current TWA versionCode
-        versionName "1.0.6"
-
-        // Required for WebView file chooser on older Android
-        multiDexEnabled true
+        versionCode 10                         // Must be higher than the live release (9)
+        versionName "1.0.7"
     }
 
     buildTypes {
@@ -48,6 +45,5 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.multidex:multidex:2.0.1'
-    // No other dependencies needed — pure WebView, no third-party SDKs
+    // None. Pure WebView, no third-party SDKs. (MultiDex removed: minSdk 24 supports multiple dex files natively.)
 }
