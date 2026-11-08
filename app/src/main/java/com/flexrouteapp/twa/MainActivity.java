@@ -25,7 +25,7 @@ import android.widget.RelativeLayout;
 
 public class MainActivity extends Activity {
 
-    private static final String APP_URL = "https://flexrouteapp.com/flexroute";
+    private static final String APP_URL = "https://flexrouteapp.com/flexroute?utm_source=android_app&utm_medium=webview&utm_campaign=play_store";
 
     private WebView webView;
     private ProgressBar progressBar;
